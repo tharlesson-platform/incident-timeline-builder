@@ -29,9 +29,10 @@ def build(
     timezone: str = typer.Option("UTC"),
     output_dir: Path = typer.Option(Path("artifacts")),
 ) -> None:
-    report = build_timeline(evidence_path, timezone)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    (output_dir / "timeline.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
-    (output_dir / "timeline.md").write_text(render_markdown(report), encoding="utf-8")
-    (output_dir / "timeline.html").write_text(render_html(report), encoding="utf-8")
-    console.print(f"events={len(report['events'])} probable_cause={report['probable_cause']}")
+                report = build_timeline(evidence_path, timezone)
+                output_dir.mkdir(parents=True, exist_ok=True)
+                (output_dir / "timeline.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+                (output_dir / "timeline.md").write_text(render_markdown(report), encoding="utf-8")
+                (output_dir / "timeline.html").write_text(render_html(report), encoding="utf-8")
+                (output_dir / "postmortem-draft.md").write_text(render_markdown(report), encoding="utf-8")
+                console.print(f"events={len(report['events'])} probable_cause={report['probable_cause']}")
