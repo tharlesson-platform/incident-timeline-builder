@@ -1,0 +1,4 @@
+timestamp,type,severity,source,message,tags
+2026-04-20T10:00:00+00:00,deploy,info,github-actions,deploy started,payments;deploy
+2026-04-20T10:03:00+00:00,alert,critical,alertmanager,5xx rate high,payments;customer-impact
+2026-04-20T10:04:00+00:00,infra,error,terraform,listener updated,payments;alb

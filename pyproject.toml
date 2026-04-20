@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "incident-timeline-builder"
+version = "0.1.0"
+description = "CLI para consolidar evidências, montar timelines de incidentes e gerar rascunho de postmortem."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "Tharlesson" }]
+dependencies = [
+  "typer>=0.12.0,<1.0.0",
+  "rich>=13.9.0,<14.0.0"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0,<9.0.0"
+]
+
+[project.scripts]
+incident-timeline-builder = "cli.main:run"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cli*", "parsers*", "normalizers*", "correlators*", "reporters*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
