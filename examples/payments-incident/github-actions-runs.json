@@ -1,0 +1,46 @@
+{
+  "workflow_runs": [
+    {
+      "id": 4501,
+      "name": "Deploy payments-api to prod",
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success",
+      "run_started_at": "2026-04-20T09:58:00+00:00",
+      "updated_at": "2026-04-20T10:00:30+00:00",
+      "html_url": "https://github.com/example/payments/actions/runs/4501",
+      "service": "payments-api",
+      "environment": "prod",
+      "head_branch": "main",
+      "actor": {
+        "login": "release-bot"
+      },
+      "incident_id": "payments-apr20",
+      "tags": [
+        "payments",
+        "deploy"
+      ]
+    },
+    {
+      "id": 4502,
+      "name": "Rollback payments-api",
+      "event": "workflow_dispatch",
+      "status": "completed",
+      "conclusion": "success",
+      "run_started_at": "2026-04-20T10:05:20+00:00",
+      "updated_at": "2026-04-20T10:07:20+00:00",
+      "html_url": "https://github.com/example/payments/actions/runs/4502",
+      "service": "payments-api",
+      "environment": "prod",
+      "head_branch": "main",
+      "actor": {
+        "login": "release-bot"
+      },
+      "incident_id": "payments-apr20",
+      "tags": [
+        "payments",
+        "rollback"
+      ]
+    }
+  ]
+}

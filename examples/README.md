@@ -1,30 +1,27 @@
 # Examples
 
-Os exemplos deste repositorio foram pensados para mostrar a consolidacao de eventos em formatos diferentes.
+Os exemplos agora cobrem o roadmap entregue:
 
-## Arquivos
+- `payments-incident/`
+  - incidente unico com evidencias de CloudWatch, Slack, GitHub Actions e eventos genericos
+- `multi-incident/`
+  - duas janelas de incidente no mesmo lote para validar agrupamento automatico por tags e proximidade temporal
 
-- `events.json`
-  - Lote de eventos estruturados em JSON.
-
-- `events.csv`
-  - Lote complementar em CSV para mostrar normalizacao e unificacao de fontes.
-
-## Comando recomendado
+## Comandos recomendados
 
 ```bash
-incident-timeline-builder build --evidence-path examples --timezone UTC --output-dir artifacts/examples
+incident-timeline-builder build --evidence-path examples/payments-incident --timezone UTC --output-dir artifacts/payments
+incident-timeline-builder build --evidence-path examples/multi-incident --timezone UTC --output-dir artifacts/multi
 ```
 
-## Saidas esperadas
+## O que cada exemplo valida
 
-- `timeline.json`
-- `timeline.md`
-- `timeline.html`
-- `postmortem-draft.md`
+- `payments-incident`
+  - parsers dedicados de CloudWatch, Slack e GitHub Actions
+  - consolidacao de timeline
+  - template completo de postmortem
 
-## Ordem recomendada
-
-1. Rode o exemplo em UTC
-2. Rode o mesmo exemplo em `America/Sao_Paulo`
-3. Compare a timeline e a normalizacao de tempo
+- `multi-incident`
+  - agrupamento automatico por tags e servico
+  - eleicao do incidente principal para RCA
+  - manutencao de multiplos clusters no mesmo report

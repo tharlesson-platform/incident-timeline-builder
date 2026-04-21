@@ -1,17 +1,50 @@
-# Incident Timeline Builder Architecture
+# Architecture
 
-## Visão geral
+## Visao geral
 
-Construtor de timelines e rascunhos de postmortem a partir de múltiplas fontes de evidência locais.
+O `incident-timeline-builder` transforma evidencias locais em um report unico:
 
-## Fluxo
+1. `parsers/`
+   - identifica e converte arquivos `CSV` e `JSON` em eventos normalizados
+   - reconhece formatos dedicados de CloudWatch, Slack e GitHub Actions
+2. `normalizers/`
+   - converte timestamps para o timezone solicitado
+3. `correlators/`
+   - agrupa eventos em incidentes usando `incident_id`, servico, tags e proximidade temporal
+   - escolhe o incidente principal
+   - gera resumo e 5 Whys
+4. `reporters/`
+   - renderiza timeline em JSON, Markdown e HTML
+   - monta `postmortem-draft.md`
 
-- Parsers leem CSV/JSON exportados de alertas, pipelines, deploys e eventos de infra.
-- Normalizers convertem timestamps para um formato consistente.
-- O correlator ordena e destaca a provável causa inicial para acelerar o postmortem.
+## Decisoes principais
 
-## Extensões futuras
+- integracoes sao baseadas em arquivos exportados e nao em chamadas online
+- agrupamento automatico funciona mesmo sem `incident_id` explicito
+- o postmortem e gerado a partir do incidente principal, sem perder os outros clusters no report
 
-- Adicionar integração com Slack, CloudWatch, Alertmanager e GitHub Actions.
-- Anexar links de evidência por evento.
-- Gerar template de postmortem com campos RCA e owner automaticamente.
+## Modelo de evento interno
+
+Cada evidencia e convertida para este shape logico:
+
+```json
+{
+  "timestamp": "2026-04-20T07:03:00-03:00",
+  "type": "alert",
+  "severity": "critical",
+  "source": "cloudwatch",
+  "message": "payments-api-5xx-rate: 5XXError exceeded threshold on ALB",
+  "tags": ["payments", "customer-impact", "cloudwatch"],
+  "incident_id": "payments-apr20",
+  "owner": "sre-oncall",
+  "service": "payments-api",
+  "link": null,
+  "metadata": {}
+}
+```
+
+## Evolucao futura opcional
+
+- links profundos de evidencia por evento
+- export adicional para CSV
+- heuristicas avancadas de correlacao com score configuravel

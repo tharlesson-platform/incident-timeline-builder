@@ -1,0 +1,7 @@
+timestamp,type,severity,source,message,tags,service,owner
+2026-04-20T14:00:00+00:00,deploy,info,github-actions,deploy checkout-api started,checkout;deploy,checkout-api,release-bot
+2026-04-20T14:03:00+00:00,alert,critical,cloudwatch,checkout-api 5xx rate high,checkout;customer-impact,checkout-api,sre-oncall
+2026-04-20T14:07:00+00:00,recovery,info,github-actions,rollback completed for checkout-api,checkout;rollback,checkout-api,release-bot
+2026-04-20T16:20:00+00:00,pipeline,warning,github-actions,catalog-api image build started,catalog;pipeline,catalog-api,release-bot
+2026-04-20T16:23:00+00:00,alert,error,cloudwatch,catalog-api latency high,catalog;customer-impact,catalog-api,sre-oncall
+2026-04-20T16:30:00+00:00,recovery,info,jenkins,catalog-api cache flush recovered latency,catalog;rollback,catalog-api,platform-engineering

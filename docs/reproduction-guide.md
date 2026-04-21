@@ -1,49 +1,51 @@
 # Guia de reproducao
 
-Este guia ajuda novos colaboradores a gerar uma timeline completa sem precisar descobrir manualmente quais tipos de arquivo o repositorio aceita.
+Este guia ajuda a validar as funcionalidades entregues no roadmap.
 
 ## Pre-requisitos
 
 - Python 3.11+
 - dependencias instaladas com `python -m pip install -e .[dev]`
 
-## Primeira execucao recomendada
+## Passo 1: incidente unico com todas as fontes
 
 ```bash
-incident-timeline-builder build --evidence-path examples --timezone UTC --output-dir artifacts/utc
+incident-timeline-builder build --evidence-path examples/payments-incident --timezone UTC --output-dir artifacts/payments
 ```
 
-Depois revise:
+Revise:
 
-- `artifacts/utc/timeline.json`
-- `artifacts/utc/timeline.md`
-- `artifacts/utc/timeline.html`
-- `artifacts/utc/postmortem-draft.md`
+- `artifacts/payments/timeline.json`
+- `artifacts/payments/timeline.md`
+- `artifacts/payments/timeline.html`
+- `artifacts/payments/postmortem-draft.md`
 
-## Segunda execucao recomendada
+## Passo 2: validar timezone local
 
 ```bash
-incident-timeline-builder build --evidence-path examples --timezone America/Sao_Paulo --output-dir artifacts/br
+incident-timeline-builder build --evidence-path examples/payments-incident --timezone America/Sao_Paulo --output-dir artifacts/payments-br
 ```
 
-Esse passo ajuda a validar a normalizacao de timezone, que costuma ser ponto de dor em postmortems.
+Valide:
 
-## O que revisar
+- offsets com `-03:00`
+- mesma ordenacao logica da timeline
+- postmortem com a mesma hipotese causal
 
-- ordenacao cronologica
-- agrupamento dos eventos
-- causa provavel sugerida
-- proximos passos
+## Passo 3: validar agrupamento automatico
+
+```bash
+incident-timeline-builder build --evidence-path examples/multi-incident --timezone UTC --output-dir artifacts/multi
+```
+
+Valide:
+
+- dois ou mais incidentes em `timeline.json`
+- `primary_incident_id` apontando para o cluster mais relevante
+- eventos de `catalog-api` e `checkout-api` em grupos separados
 
 ## Erros comuns
 
-- Misturar diretorios com eventos nao relacionados.
-- Rodar sem revisar timezone e depois comparar horarios incorretamente.
-- Esperar enriquecimento automatico de fontes externas que ainda nao estao conectadas.
-
-## Fluxo recomendado para onboarding
-
-1. Rodar com timezone UTC
-2. Rodar com timezone local
-3. Comparar a timeline
-4. Criar um diretorio proprio em `examples/` para um incidente simulado do time
+- apontar `--evidence-path` para `examples/` sem `--recursive` e esperar leitura dos subdiretorios
+- comparar horarios sem considerar o timezone solicitado
+- misturar exportacoes de incidentes diferentes no mesmo diretorio sem tags de servico

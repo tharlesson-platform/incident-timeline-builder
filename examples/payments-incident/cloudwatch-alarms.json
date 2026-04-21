@@ -1,0 +1,48 @@
+{
+  "alarms": [
+    {
+      "AlarmName": "payments-api-5xx-rate",
+      "NewStateValue": "ALARM",
+      "StateUpdatedTimestamp": "2026-04-20T10:03:00+00:00",
+      "NewStateReason": "5XXError exceeded threshold on ALB",
+      "Dimensions": [
+        {
+          "Name": "Service",
+          "Value": "payments-api"
+        },
+        {
+          "Name": "Environment",
+          "Value": "prod"
+        }
+      ],
+      "tags": [
+        "payments",
+        "customer-impact"
+      ],
+      "incident_id": "payments-apr20",
+      "owner": "sre-oncall"
+    },
+    {
+      "AlarmName": "payments-api-latency-p95",
+      "NewStateValue": "ALARM",
+      "StateUpdatedTimestamp": "2026-04-20T10:03:30+00:00",
+      "NewStateReason": "Latency above 900ms",
+      "Dimensions": [
+        {
+          "Name": "Service",
+          "Value": "payments-api"
+        },
+        {
+          "Name": "Environment",
+          "Value": "prod"
+        }
+      ],
+      "tags": [
+        "payments",
+        "latency"
+      ],
+      "incident_id": "payments-apr20",
+      "owner": "sre-oncall"
+    }
+  ]
+}

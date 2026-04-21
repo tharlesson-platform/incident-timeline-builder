@@ -1,18 +1,15 @@
 # Incident Timeline Builder
 
-CLI para consolidar evidências, montar timelines de incidentes e gerar rascunho de postmortem.
+CLI para consolidar evidencias locais, montar timelines de incidentes, agrupar eventos automaticamente e gerar rascunhos de postmortem.
 
-## Problema que resolve
+## O que o projeto entrega
 
-- Durante incidentes, eventos relevantes ficam espalhados entre alertas, deploys, pipelines e logs exportados.
-- Montar timeline manual consome tempo e costuma atrasar postmortems.
-- A ferramenta ordena evidências, sugere causa provável, gera análise de 5 Whys e produz material pronto para revisão.
-
-## Arquitetura
-
-- Parsers modulares para JSON/CSV locais.
-- Normalização de timestamps para uma linha do tempo coerente.
-- Correlator simples que destaca evento crítico mais provável e próximos passos.
+- ingestao de evidencias genericas em `CSV` e `JSON`
+- parsers dedicados para exports de `CloudWatch`, `Slack` e `GitHub Actions`
+- normalizacao de timestamps com timezone real
+- agrupamento automatico por incidente usando `incident_id`, tags, servico e proximidade temporal
+- selecao do incidente principal para RCA e 5 Whys
+- saidas em `timeline.json`, `timeline.md`, `timeline.html` e `postmortem-draft.md`
 
 ## Estrutura do projeto
 
@@ -30,69 +27,81 @@ CLI para consolidar evidências, montar timelines de incidentes e gerar rascunho
 |-- Makefile
 |-- .github/workflows/ci.yml
 |-- README.md
-|-- LICENSE
-|-- NOTICE
+```
+
+## Instalacao
+
+```bash
+python -m pip install -e .[dev]
 ```
 
 ## Como executar
 
+Exemplo principal com todos os conectores do roadmap:
+
 ```bash
-python -m pip install -e .[dev]
-incident-timeline-builder build --evidence-path examples --timezone UTC
+incident-timeline-builder build --evidence-path examples/payments-incident --timezone UTC --output-dir artifacts/payments
 ```
 
-## Reproducao guiada
+Exemplo com multiplos incidentes no mesmo lote:
 
-- Primeiro passo:
-  - `incident-timeline-builder build --evidence-path examples --timezone UTC --output-dir artifacts/utc`
-- Segundo passo:
-  - `incident-timeline-builder build --evidence-path examples --timezone America/Sao_Paulo --output-dir artifacts/br`
-- Para reproducao mais assertiva:
-  - consulte `examples/README.md`
-  - siga `docs/reproduction-guide.md`
+```bash
+incident-timeline-builder build --evidence-path examples/multi-incident --timezone UTC --output-dir artifacts/multi
+```
 
-## Exemplos reais
+Para diretórios aninhados:
 
-- `incident-timeline-builder build --evidence-path examples --timezone UTC`
-- `incident-timeline-builder build --evidence-path ./incident-2026-04-20 --timezone America/Sao_Paulo`
-- `incident-timeline-builder build --evidence-path examples --timezone America/Sao_Paulo --output-dir artifacts/br`
+```bash
+incident-timeline-builder build --evidence-path ./incident-evidence --timezone America/Sao_Paulo --recursive
+```
 
-## Como isso ajuda SREs no dia a dia
+## Artefatos gerados
 
-- Reduz tempo para fechar timeline e iniciar o postmortem.
-- Ajuda a juntar sinais de fontes heterogêneas com ordenação consistente.
-- Estrutura um primeiro rascunho dos 5 porquês para acelerar RCA colaborativa.
-- Cria base objetiva para RCA, comunicação e aprendizado.
+- `timeline.json`
+  - report completo, incluindo eventos normalizados, incidentes agrupados e 5 Whys
+- `timeline.md`
+  - resumo legivel para revisão em pull request, issue ou wiki
+- `timeline.html`
+  - visualizacao HTML da timeline e dos incidentes agrupados
+- `postmortem-draft.md`
+  - template completo para RCA, impacto, fatores contribuintes e follow-ups
 
-## Roadmap
+## Fontes suportadas
 
-- Integração com CloudWatch, Slack e GitHub Actions.
-- Template completo de postmortem.
-- Agrupamento automático por incidente e tags.
+- `CSV` e `JSON` genericos
+- `CloudWatch`
+  - alarmes exportados em lote com `alarms`, `metric_alarms` ou listas de eventos
+- `Slack`
+  - arrays de mensagens ou objetos com `channel` e `messages`
+- `GitHub Actions`
+  - `workflow_runs` e listas de `jobs`
 
-## Licença
+## Exemplos
 
-Este projeto está licenciado sob a Apache License 2.0. Consulte o arquivo `LICENSE` para mais detalhes.
+- [examples/README.md](C:/Users/tharl/OneDrive/Documentos/git/sre/incident-timeline-builder/examples/README.md)
+- [examples/payments-incident/README.md](C:/Users/tharl/OneDrive/Documentos/git/sre/incident-timeline-builder/examples/payments-incident/README.md)
+- [examples/multi-incident/README.md](C:/Users/tharl/OneDrive/Documentos/git/sre/incident-timeline-builder/examples/multi-incident/README.md)
 
-## Atribuição
+## Documentacao
 
-Este projeto foi desenvolvido e publicado por **Tharlesson**.
-Caso você utilize este material como base em ambientes internos, estudos, adaptações ou redistribuições, preserve os créditos de autoria e os avisos de licença aplicáveis.
+- [docs/cli-reference.md](C:/Users/tharl/OneDrive/Documentos/git/sre/incident-timeline-builder/docs/cli-reference.md)
+- [docs/architecture.md](C:/Users/tharl/OneDrive/Documentos/git/sre/incident-timeline-builder/docs/architecture.md)
+- [docs/reproduction-guide.md](C:/Users/tharl/OneDrive/Documentos/git/sre/incident-timeline-builder/docs/reproduction-guide.md)
+- [docs/source-cloudwatch.md](C:/Users/tharl/OneDrive/Documentos/git/sre/incident-timeline-builder/docs/source-cloudwatch.md)
+- [docs/source-slack.md](C:/Users/tharl/OneDrive/Documentos/git/sre/incident-timeline-builder/docs/source-slack.md)
+- [docs/source-github-actions.md](C:/Users/tharl/OneDrive/Documentos/git/sre/incident-timeline-builder/docs/source-github-actions.md)
+- [docs/grouping-and-correlation.md](C:/Users/tharl/OneDrive/Documentos/git/sre/incident-timeline-builder/docs/grouping-and-correlation.md)
+- [docs/postmortem-template.md](C:/Users/tharl/OneDrive/Documentos/git/sre/incident-timeline-builder/docs/postmortem-template.md)
 
-## Créditos e Uso
+## Roadmap entregue nesta iteracao
 
-Este repositório foi criado com foco em automação, padronização operacional e melhoria da rotina de profissionais de SRE, DevOps, Cloud e Plataforma.
+- integracao com `CloudWatch`, `Slack` e `GitHub Actions` por meio de arquivos exportados
+- template completo de postmortem
+- agrupamento automatico por incidente e tags
 
-Você pode:
-- estudar
-- reutilizar
-- adaptar
-- evoluir este projeto dentro do seu contexto
+## Licenca
 
-Ao reutilizar ou derivar este material:
-- mantenha os avisos de licença
-- preserve os créditos de autoria quando aplicável
-- documente alterações relevantes feitas sobre a base original
+Este projeto esta licenciado sob a Apache License 2.0. Consulte `LICENSE` para mais detalhes.
 
 ## Autor
 

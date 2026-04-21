@@ -8,6 +8,9 @@
     "tags": [
       "payments",
       "rollback"
-    ]
+    ],
+    "service": "payments-api",
+    "incident_id": "payments-apr20",
+    "owner": "release-bot"
   }
 ]

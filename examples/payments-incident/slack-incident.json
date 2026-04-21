@@ -1,0 +1,33 @@
+{
+  "channel": "inc-payments-apr20",
+  "messages": [
+    {
+      "ts": "1776688740.000000",
+      "user": "release-bot",
+      "text": "Starting deploy of payments-api to prod.",
+      "service": "payments-api",
+      "incident_id": "payments-apr20"
+    },
+    {
+      "ts": "1776688990.000000",
+      "user": "sre-oncall",
+      "text": "Seeing customer impact on checkout, 5xx is climbing fast.",
+      "service": "payments-api",
+      "incident_id": "payments-apr20"
+    },
+    {
+      "ts": "1776689110.000000",
+      "user": "release-bot",
+      "text": "Rollback initiated for payments-api deploy.",
+      "service": "payments-api",
+      "incident_id": "payments-apr20"
+    },
+    {
+      "ts": "1776689300.000000",
+      "user": "sre-oncall",
+      "text": "Payments-api recovering, 5xx trending down after rollback.",
+      "service": "payments-api",
+      "incident_id": "payments-apr20"
+    }
+  ]
+}

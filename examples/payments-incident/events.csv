@@ -1,0 +1,5 @@
+timestamp,type,severity,source,message,tags,service,incident_id,owner,link
+2026-04-20T10:00:00+00:00,deploy,info,github-actions,deploy started,payments;deploy,payments-api,payments-apr20,release-bot,https://github.com/example/payments/actions/runs/4501
+2026-04-20T10:04:00+00:00,infra,error,terraform,listener updated,payments;alb,payments-api,payments-apr20,platform-engineering,
+2026-04-20T10:06:30+00:00,validation,warning,synthetics,checkout probe failing,payments;customer-impact;probe,payments-api,payments-apr20,sre-oncall,
+2026-04-20T10:09:10+00:00,validation,info,synthetics,checkout probe healthy after rollback,payments;probe;rollback,payments-api,payments-apr20,sre-oncall,

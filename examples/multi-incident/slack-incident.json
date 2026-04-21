@@ -1,0 +1,22 @@
+[
+  {
+    "ts": "1776703320.000000",
+    "user": "sre-oncall",
+    "text": "Checkout incident mitigated after rollback.",
+    "service": "checkout-api",
+    "tags": [
+      "checkout",
+      "rollback"
+    ]
+  },
+  {
+    "ts": "1776710640.000000",
+    "user": "sre-oncall",
+    "text": "Catalog latency incident declared in prod.",
+    "service": "catalog-api",
+    "tags": [
+      "catalog",
+      "customer-impact"
+    ]
+  }
+]
