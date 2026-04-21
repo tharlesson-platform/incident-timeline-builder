@@ -22,9 +22,17 @@ def render_markdown(report: dict) -> str:
         f"- impacted_services: {report['summary']['impacted_services']}",
         f"- timeframe: {report['summary']['timeframe']}",
         "",
-        "## Incident groups",
+        "## Confirmed facts",
         "",
     ]
+    lines.extend(f"- {entry}" for entry in report["confirmed_facts"])
+    lines.extend(["", "## Hypotheses", ""])
+    lines.extend(f"- {entry}" for entry in report["hypotheses"])
+    lines.extend([
+        "",
+        "## Incident groups",
+        "",
+    ])
 
     for incident in report["incidents"]:
         lines.extend(
@@ -106,9 +114,17 @@ def render_postmortem_markdown(report: dict) -> str:
         "",
         postmortem["root_cause_hypothesis"],
         "",
-        "## Contributing factors",
+        "## Confirmed facts",
         "",
     ]
+    lines.extend(f"- {entry}" for entry in postmortem["confirmed_facts"])
+    lines.extend(["", "## Working hypotheses", ""])
+    lines.extend(f"- {entry}" for entry in postmortem["hypotheses"])
+    lines.extend([
+        "",
+        "## Contributing factors",
+        "",
+    ])
     lines.extend(f"- {entry}" for entry in postmortem["contributing_factors"])
     lines.extend(["", "## What worked", ""])
     lines.extend(f"- {entry}" for entry in postmortem["what_worked"])
@@ -177,6 +193,8 @@ def render_html(report: dict) -> str:
         )
         for item in report["five_whys"]["items"]
     )
+    confirmed_fact_items = "".join(f"<li>{escape(item)}</li>" for item in report["confirmed_facts"])
+    hypothesis_items = "".join(f"<li>{escape(item)}</li>" for item in report["hypotheses"])
     return f"""<!doctype html>
 <html lang="pt-BR">
   <head>
@@ -231,6 +249,10 @@ def render_html(report: dict) -> str:
     <p><strong>Probable cause:</strong> {escape(report['probable_cause'])}</p>
     <h2>Summary</h2>
     <ul>{summary_items}</ul>
+    <h2>Confirmed facts</h2>
+    <ul>{confirmed_fact_items}</ul>
+    <h2>Hypotheses</h2>
+    <ul>{hypothesis_items}</ul>
     <h2>Incident groups</h2>
     <div class="incident-grid">{incident_cards}</div>
     <h2>Timeline</h2>

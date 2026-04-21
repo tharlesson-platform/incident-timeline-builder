@@ -49,6 +49,12 @@ Exemplo com multiplos incidentes no mesmo lote:
 incident-timeline-builder build --evidence-path examples/multi-incident --timezone UTC --output-dir artifacts/multi
 ```
 
+Exemplo consumindo bundle do `aws-sre-doctor`:
+
+```bash
+incident-timeline-builder build --evidence-path examples/aws-doctor-bundle --timezone UTC --output-dir artifacts/aws-doctor
+```
+
 Para diretórios aninhados:
 
 ```bash
@@ -75,6 +81,8 @@ incident-timeline-builder build --evidence-path ./incident-evidence --timezone A
   - arrays de mensagens ou objetos com `channel` e `messages`
 - `GitHub Actions`
   - `workflow_runs` e listas de `jobs`
+- `AWS SRE Doctor`
+  - bundles com `diagnosis.json` e `bundle-manifest.json`
 
 ## Exemplos
 
@@ -98,6 +106,7 @@ incident-timeline-builder build --evidence-path ./incident-evidence --timezone A
 - integracao com `CloudWatch`, `Slack` e `GitHub Actions` por meio de arquivos exportados
 - template completo de postmortem
 - agrupamento automatico por incidente e tags
+- ingestao de bundle do `aws-sre-doctor` com fatos confirmados e hipoteses
 
 ## Licenca
 

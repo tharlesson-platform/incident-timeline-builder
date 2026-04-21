@@ -44,3 +44,24 @@ def test_build_supports_recursive_directories(tmp_path: Path) -> None:
     )
     assert result.exit_code == 0, result.stdout
     assert "incidents=" in result.stdout
+
+
+def test_build_from_aws_sre_doctor_bundle_enriches_postmortem(tmp_path: Path) -> None:
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        [
+            "build",
+            "--evidence-path",
+            "examples/aws-doctor-bundle",
+            "--timezone",
+            "UTC",
+            "--output-dir",
+            str(tmp_path),
+        ],
+    )
+    assert result.exit_code == 0, result.stdout
+    postmortem = (tmp_path / "postmortem-draft.md").read_text(encoding="utf-8")
+    timeline = (tmp_path / "timeline.md").read_text(encoding="utf-8")
+    assert "Confirmed facts" in postmortem
+    assert "Hypotheses" in timeline

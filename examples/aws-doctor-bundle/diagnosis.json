@@ -1,0 +1,80 @@
+{
+  "title": "AWS SRE Doctor",
+  "generated_at": "2026-04-20T14:42:00Z",
+  "environment": "prod",
+  "workload": {
+    "type": "ecs",
+    "name": "payments-api",
+    "cluster": "prod-apps"
+  },
+  "health_score": 18,
+  "severity": "critical",
+  "summary": {
+    "issues_found": 3,
+    "diagnosis": "Ha indicios fortes de degradacao operacional no workload payments-api."
+  },
+  "issues": [
+    {
+      "title": "ECS service unhealthy",
+      "severity": "critical",
+      "impact": "2 tasks indisponiveis no servico payments-api.",
+      "probable_causes": [
+        "Capacity shortage",
+        "Target group reprovando health checks"
+      ],
+      "next_steps": [
+        "Validar eventos do service",
+        "Conferir target group"
+      ],
+      "evidence": {
+        "desired": 4,
+        "running": 2
+      }
+    },
+    {
+      "title": "ALB target unhealthy",
+      "severity": "high",
+      "impact": "Health checks falhando para 3 dos 4 targets.",
+      "probable_causes": [
+        "App devolvendo 5xx",
+        "Security group bloqueando ALB -> target"
+      ],
+      "next_steps": [
+        "Validar path de health check",
+        "Revisar logs da aplicacao"
+      ],
+      "evidence": {
+        "healthy_targets": 1,
+        "unhealthy_targets": 3
+      }
+    },
+    {
+      "title": "IAM permission mismatch",
+      "severity": "high",
+      "impact": "Containers nao conseguem puxar secrets criticos.",
+      "probable_causes": [
+        "Policy insuficiente",
+        "IRSA apontando para service account errada"
+      ],
+      "next_steps": [
+        "Revisar execution role",
+        "Comparar permissoes com a API falha"
+      ],
+      "evidence": {
+        "secret_errors": [
+          "AccessDeniedException"
+        ]
+      }
+    }
+  ],
+  "possible_causes": [
+    "Capacity shortage",
+    "Target group reprovando health checks",
+    "Policy insuficiente"
+  ],
+  "suggested_next_steps": [
+    "Validar eventos do service",
+    "Revisar target group",
+    "Revisar execution role"
+  ]
+}

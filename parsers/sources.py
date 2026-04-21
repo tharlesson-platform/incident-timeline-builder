@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import json
 import re
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -50,6 +51,10 @@ def _load_json(path: Path) -> list[dict]:
 
 def _parse_json_payload(payload: Any, path: Path) -> list[dict]:
     if isinstance(payload, dict):
+        if _looks_like_aws_sre_doctor_manifest(payload):
+            return [_shape_aws_sre_doctor_manifest(payload, path)]
+        if _looks_like_aws_sre_doctor_diagnosis(payload):
+            return _parse_aws_sre_doctor_diagnosis(payload, path)
         if "workflow_runs" in payload:
             return [_shape_github_actions_run(item, path) for item in payload["workflow_runs"]]
         if "jobs" in payload:
@@ -91,6 +96,120 @@ def _looks_like_github_actions_payload(payload: list[Any]) -> bool:
     return bool(payload) and all(
         isinstance(item, dict) and any(key in item for key in ("run_started_at", "conclusion", "workflow_id"))
         for item in payload
+    )
+
+
+def _looks_like_aws_sre_doctor_manifest(payload: dict[str, Any]) -> bool:
+    return payload.get("tool") == "aws-sre-doctor" and "files" in payload
+
+
+def _looks_like_aws_sre_doctor_diagnosis(payload: dict[str, Any]) -> bool:
+    return "issues" in payload and "health_score" in payload and "workload" in payload
+
+
+def _parse_aws_sre_doctor_diagnosis(payload: dict[str, Any], path: Path) -> list[dict]:
+    generated_at = _event_timestamp(payload, path)
+    workload = payload.get("workload") or {}
+    workload_name = workload.get("name") or workload.get("cluster") or "aws-workload"
+    environment = payload.get("environment")
+    incident_id = payload.get("incident_id") or (f"{workload_name}-{environment}" if environment else None)
+
+    events: list[dict] = [
+        _shape_generic_event(
+            {
+                "timestamp": generated_at,
+                "type": "diagnosis",
+                "severity": payload.get("severity", "warning"),
+                "source": "aws-sre-doctor",
+                "message": payload.get("summary", {}).get("diagnosis")
+                or f"AWS SRE Doctor identified {len(payload.get('issues', []))} operational issues",
+                "tags": _merge_tags(
+                    "aws-sre-doctor",
+                    environment,
+                    workload.get("type"),
+                    workload_name,
+                    payload.get("impact_classification"),
+                ),
+                "incident_id": incident_id,
+                "service": workload_name,
+                "status": payload.get("severity"),
+                "metadata": {
+                    "health_score": payload.get("health_score"),
+                    "issues_found": payload.get("summary", {}).get("issues_found"),
+                    "possible_causes": payload.get("possible_causes", []),
+                    "suggested_next_steps": payload.get("suggested_next_steps", []),
+                    "workload": workload,
+                },
+            },
+            path=path,
+        )
+    ]
+
+    for issue in payload.get("issues", []):
+        tags = _merge_tags(
+            "aws-sre-doctor",
+            environment,
+            workload.get("type"),
+            workload_name,
+            issue.get("probable_causes", [])[:2],
+        )
+        if issue.get("severity") == "critical":
+            tags.append("customer-impact")
+        events.append(
+            _shape_generic_event(
+                {
+                    "timestamp": generated_at,
+                    "type": "diagnosis-finding",
+                    "severity": issue.get("severity", "warning"),
+                    "source": "aws-sre-doctor",
+                    "message": f"{issue.get('title', 'Finding')}: {issue.get('impact', 'Operational degradation detected')}",
+                    "tags": tags,
+                    "incident_id": incident_id,
+                    "service": workload_name,
+                    "status": issue.get("severity"),
+                    "metadata": {
+                        "impact": issue.get("impact"),
+                        "probable_causes": issue.get("probable_causes", []),
+                        "next_steps": issue.get("next_steps", []),
+                        "evidence": issue.get("evidence", {}),
+                    },
+                },
+                path=path,
+            )
+        )
+    return [event for event in events if event]
+
+
+def _shape_aws_sre_doctor_manifest(payload: dict[str, Any], path: Path) -> dict | None:
+    bundle_metadata = payload.get("bundle_metadata") or {}
+    workload = payload.get("workload") or {}
+    service = workload.get("name") or workload.get("cluster")
+    return _shape_generic_event(
+        {
+            "timestamp": payload.get("generated_at") or _event_timestamp(payload, path),
+            "type": "bundle",
+            "severity": payload.get("severity", "info"),
+            "source": "aws-sre-doctor",
+            "message": f"Incident bundle {payload.get('report_name', path.stem)} generated for {service or 'aws workload'}",
+            "tags": _merge_tags(
+                "bundle",
+                "aws-sre-doctor",
+                payload.get("environment"),
+                service,
+                bundle_metadata.get("region"),
+                bundle_metadata.get("account_alias"),
+            ),
+            "incident_id": payload.get("incident_id"),
+            "service": service,
+            "status": payload.get("severity"),
+            "metadata": {
+                "health_score": payload.get("health_score"),
+                "impact_classification": payload.get("impact_classification"),
+                "bundle_metadata": bundle_metadata,
+                "files": payload.get("files", {}),
+            },
+        },
+        path=path,
     )
 
 
@@ -281,7 +400,14 @@ def _shape_generic_event(item: dict | None, path: Path) -> dict | None:
         "html_url",
         "permalink",
     }
-    metadata = {key: value for key, value in item.items() if key not in consumed_keys and value not in ("", None, [], {})}
+    metadata = dict(item.get("metadata") or {})
+    metadata.update(
+        {
+            key: value
+            for key, value in item.items()
+            if key not in consumed_keys and key != "metadata" and value not in ("", None, [], {})
+        }
+    )
 
     return {
         "timestamp": str(timestamp),
@@ -445,3 +571,9 @@ def _service_from_tags(tags: Any) -> str | None:
         if tag.endswith(("-api", "-service", "-worker")):
             return tag
     return None
+
+
+def _event_timestamp(payload: dict[str, Any], path: Path) -> str:
+    if payload.get("generated_at"):
+        return str(payload["generated_at"])
+    return datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc).isoformat()

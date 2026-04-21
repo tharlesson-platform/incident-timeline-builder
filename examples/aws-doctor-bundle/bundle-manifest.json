@@ -1,0 +1,25 @@
+{
+  "tool": "aws-sre-doctor",
+  "generated_at": "2026-04-20T14:42:00Z",
+  "report_name": "payments-api-prod",
+  "environment": "prod",
+  "workload": {
+    "type": "ecs",
+    "name": "payments-api",
+    "cluster": "prod-apps"
+  },
+  "severity": "critical",
+  "health_score": 18,
+  "impact_classification": "customer-impact",
+  "bundle_metadata": {
+    "region": "us-east-1",
+    "profile": "prod",
+    "account_alias": "payments-prod"
+  },
+  "files": {
+    "snapshot": "incident_snapshot_multi_service.json",
+    "json_report": "diagnosis.json",
+    "markdown_report": "diagnosis.md",
+    "html_report": "diagnosis.html"
+  }
+}

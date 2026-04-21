@@ -31,9 +31,11 @@ def build_timeline(evidence_path, timezone_name: str, recursive: bool = False, t
         "primary_incident_id": primary_incident["incident_id"] if primary_incident else None,
         "probable_cause": probable_cause,
         "summary": summary,
+        "confirmed_facts": _confirmed_facts(normalized, summary, primary_incident),
+        "hypotheses": _hypotheses(normalized, probable_cause, five_whys),
         "five_whys": five_whys,
         "correlated_events": _correlated_events(primary_events),
-        "postmortem": _build_postmortem(primary_incident, five_whys),
+        "postmortem": _build_postmortem(primary_incident, five_whys, normalized, summary),
         "next_steps": _next_steps(primary_incident),
     }
 
@@ -83,7 +85,9 @@ def _correlated_events(events: list[dict]) -> list[dict]:
     ]
 
 
-def _build_postmortem(primary_incident: dict | None, five_whys: dict) -> dict:
+def _build_postmortem(primary_incident: dict | None, five_whys: dict, events: list[dict], summary: dict) -> dict:
+    confirmed_facts = _confirmed_facts(events, summary, primary_incident)
+    hypotheses = _hypotheses(events, five_whys["hypothesis"], five_whys)
     if not primary_incident:
         return {
             "title": "Postmortem draft",
@@ -102,6 +106,8 @@ def _build_postmortem(primary_incident: dict | None, five_whys: dict) -> dict:
             "what_failed": ["Ainda faltam eventos suficientes para RCA"],
             "five_whys_hypothesis": five_whys["hypothesis"],
             "five_whys_systemic_gap": five_whys["systemic_gap"],
+            "confirmed_facts": confirmed_facts,
+            "hypotheses": hypotheses,
             "follow_up_actions": _follow_up_actions(services=[]),
             "evidence_sources": {},
         }
@@ -138,6 +144,8 @@ def _build_postmortem(primary_incident: dict | None, five_whys: dict) -> dict:
         "what_failed": _what_failed(primary_incident),
         "five_whys_hypothesis": five_whys["hypothesis"],
         "five_whys_systemic_gap": five_whys["systemic_gap"],
+        "confirmed_facts": confirmed_facts,
+        "hypotheses": hypotheses,
         "follow_up_actions": _follow_up_actions(services),
         "evidence_sources": _count_by_key(primary_incident["events"], "source"),
     }
@@ -234,3 +242,47 @@ def _next_steps(primary_incident: dict | None) -> list[str]:
         "Fechar o postmortem com RCA confirmada, impacto e acoes preventivas",
         "Priorizar os follow-ups que eliminam a dependencia de mitigacao reativa",
     ]
+
+
+def _confirmed_facts(events: list[dict], summary: dict, primary_incident: dict | None) -> list[str]:
+    facts: list[str] = []
+    if primary_incident:
+        facts.append(
+            f"O incidente principal {primary_incident['incident_id']} durou {primary_incident['duration_minutes']} minutos e agregou {primary_incident['event_count']} eventos."
+        )
+    impacted_services = summary.get("impacted_services") or []
+    if impacted_services:
+        facts.append(f"Os servicos impactados observados na evidencia foram: {', '.join(impacted_services)}.")
+    counts_by_source = summary.get("counts_by_source") or {}
+    if counts_by_source:
+        facts.append(f"As evidencias vieram de {counts_by_source}.")
+    for event in events:
+        if event["source"] == "aws-sre-doctor" and event["type"] == "diagnosis":
+            health_score = event.get("metadata", {}).get("health_score")
+            issues_found = event.get("metadata", {}).get("issues_found")
+            if health_score is not None:
+                facts.append(
+                    f"O bundle do AWS SRE Doctor registrou health_score={health_score} com {issues_found or 0} achados prioritarios."
+                )
+            break
+    for event in events:
+        if event["severity"] in {"critical", "error"}:
+            facts.append(f"Evidencia critica: {event['message']}")
+        if len(facts) >= 5:
+            break
+    return facts[:5]
+
+
+def _hypotheses(events: list[dict], probable_cause: str, five_whys: dict) -> list[str]:
+    hypotheses: list[str] = []
+    if probable_cause and probable_cause != "indeterminate":
+        hypotheses.append(probable_cause)
+    hypotheses.append(five_whys["hypothesis"])
+    for event in events:
+        metadata = event.get("metadata") or {}
+        for cause in metadata.get("probable_causes", []):
+            if cause not in hypotheses:
+                hypotheses.append(cause)
+        if len(hypotheses) >= 5:
+            break
+    return hypotheses[:5]
