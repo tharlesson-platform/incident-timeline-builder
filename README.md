@@ -41,10 +41,21 @@ python -m pip install -e .[dev]
 incident-timeline-builder build --evidence-path examples --timezone UTC
 ```
 
+## Reproducao guiada
+
+- Primeiro passo:
+  - `incident-timeline-builder build --evidence-path examples --timezone UTC --output-dir artifacts/utc`
+- Segundo passo:
+  - `incident-timeline-builder build --evidence-path examples --timezone America/Sao_Paulo --output-dir artifacts/br`
+- Para reproducao mais assertiva:
+  - consulte `examples/README.md`
+  - siga `docs/reproduction-guide.md`
+
 ## Exemplos reais
 
 - `incident-timeline-builder build --evidence-path examples --timezone UTC`
 - `incident-timeline-builder build --evidence-path ./incident-2026-04-20 --timezone America/Sao_Paulo`
+- `incident-timeline-builder build --evidence-path examples --timezone America/Sao_Paulo --output-dir artifacts/br`
 
 ## Como isso ajuda SREs no dia a dia
 
