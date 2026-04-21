@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from correlators.five_whys import build_five_whys
 from correlators.summary import summarize
 from parsers.sources import load_sources
 from normalizers.timestamps import normalize_timestamp
@@ -25,6 +26,7 @@ def build_timeline(evidence_path, timezone: str) -> dict:
     normalized.sort(key=lambda item: item["timestamp"])
     probable_cause = next((item["message"] for item in normalized if item["severity"] in {"critical", "error"}), "indeterminate")
     summary = summarize(normalized)
+    five_whys = build_five_whys(normalized, probable_cause)
     correlated = [
         item
         for item in normalized
@@ -37,10 +39,13 @@ def build_timeline(evidence_path, timezone: str) -> dict:
         "events": normalized,
         "probable_cause": probable_cause,
         "summary": summary,
+        "five_whys": five_whys,
         "correlated_events": correlated,
         "postmortem": {
             "summary": probable_cause,
             "impact": "Determinar impacto com base nos eventos críticos e de customer-impact",
+            "five_whys_hypothesis": five_whys["hypothesis"],
+            "five_whys_systemic_gap": five_whys["systemic_gap"],
             "follow_up_actions": [
                 "Completar timeline com owners",
                 "Confirmar mudança causal",
@@ -51,5 +56,6 @@ def build_timeline(evidence_path, timezone: str) -> dict:
             "Confirmar linha do tempo com responsáveis do deploy",
             "Anexar evidências adicionais de logs e métricas",
             "Fechar rascunho de postmortem com owner e ações",
+            "Validar e refinar a análise de 5 porquês com o time envolvido",
         ],
     }

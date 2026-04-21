@@ -6,7 +6,7 @@ CLI para consolidar evidências, montar timelines de incidentes e gerar rascunho
 
 - Durante incidentes, eventos relevantes ficam espalhados entre alertas, deploys, pipelines e logs exportados.
 - Montar timeline manual consome tempo e costuma atrasar postmortems.
-- A ferramenta ordena evidências, sugere causa provável e produz material pronto para revisão.
+- A ferramenta ordena evidências, sugere causa provável, gera análise de 5 Whys e produz material pronto para revisão.
 
 ## Arquitetura
 
@@ -61,6 +61,7 @@ incident-timeline-builder build --evidence-path examples --timezone UTC
 
 - Reduz tempo para fechar timeline e iniciar o postmortem.
 - Ajuda a juntar sinais de fontes heterogêneas com ordenação consistente.
+- Estrutura um primeiro rascunho dos 5 porquês para acelerar RCA colaborativa.
 - Cria base objetiva para RCA, comunicação e aprendizado.
 
 ## Roadmap
